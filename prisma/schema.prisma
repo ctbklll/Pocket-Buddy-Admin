@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- 1. ตารางเก็บโปรไฟล์ผู้ใช้งาน LINE ---
+model User {
+  lineUserId  String        @id @unique
+  displayName String
+  pictureUrl  String?
+  createdAt   DateTime      @default(now())
+  
+  // เชื่อมความสัมพันธ์: 1 ผู้ใช้ สามารถมีได้หลายสลิป (Transactions)
+  transactions Transaction[]
+}
+
+// --- 2. ตารางสลิป (อัปเดตการผูก Relation) ---
+model Transaction {
+  id         Int      @id @default(autoincrement())
+  lineUserId String
+  type       String
+  amount     Float
+  note       String?
+  slipUrl    String
+  createdAt  DateTime @default(now())
+  
+  // ผูกคอลัมน์ lineUserId เข้ากับตาราง User
+  user       User     @relation(fields: [lineUserId], references: [lineUserId])
+}
